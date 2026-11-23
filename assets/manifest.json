@@ -1,0 +1,383 @@
+{
+  "packageName": "HyBills Stores & Food - Storefront Hero Visual Asset Package",
+  "version": "1.0.0",
+  "standardResolution": "1024x1024 (lossless RGBA alpha)",
+  "colorSpace": "sRGB with transparent alpha channel",
+  "globalStyle": "Dark Apple-grade commercial food studio photography, cyan luminous accents compatible",
+  "scenes": {
+    "BURGER": {
+      "name": "Scene 1 \u2014 Burger Hero Showpiece",
+      "animationType": "Layer-by-layer vertical explosion & zero-offset reassembly",
+      "masterReference": "/assets/BURGER/hybills-burger-complete.png",
+      "layers": [
+        {
+          "filename": "hybills-burger-top-bun.png",
+          "path": "/assets/BURGER/hybills-burger-top-bun.png",
+          "purpose": "Primary crown brioche bun with golden sesame seeds",
+          "stackingOrder": 7,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 85%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": -160,
+            "scale": 1.02,
+            "rotate": -2
+          },
+          "boundingBox": {
+            "x": 171,
+            "y": 0,
+            "width": 853,
+            "height": 377
+          }
+        },
+        {
+          "filename": "hybills-burger-lettuce.png",
+          "path": "/assets/BURGER/hybills-burger-lettuce.png",
+          "purpose": "Crisp ruffled green lola rosa lettuce frills",
+          "stackingOrder": 6,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": -105,
+            "scale": 1.01,
+            "rotate": 1.5
+          },
+          "boundingBox": {
+            "x": 157,
+            "y": 343,
+            "width": 867,
+            "height": 104
+          }
+        },
+        {
+          "filename": "hybills-burger-tomato.png",
+          "path": "/assets/BURGER/hybills-burger-tomato.png",
+          "purpose": "Juicy thick-cut vibrant red ripe tomato slices",
+          "stackingOrder": 5,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": -60,
+            "scale": 1.0,
+            "rotate": -1
+          },
+          "boundingBox": {
+            "x": 157,
+            "y": 388,
+            "width": 867,
+            "height": 125
+          }
+        },
+        {
+          "filename": "hybills-burger-cheese.png",
+          "path": "/assets/BURGER/hybills-burger-cheese.png",
+          "purpose": "Melted aged cheddar blanket draped with appetizing drips",
+          "stackingOrder": 4,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": -20,
+            "scale": 1.0,
+            "rotate": 0.5
+          },
+          "boundingBox": {
+            "x": 182,
+            "y": 458,
+            "width": 840,
+            "height": 119
+          }
+        },
+        {
+          "filename": "hybills-burger-patty.png",
+          "path": "/assets/BURGER/hybills-burger-patty.png",
+          "purpose": "Flame-grilled juicy prime beef patty with charred grill marks",
+          "stackingOrder": 3,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": 25,
+            "scale": 1.0,
+            "rotate": -0.5
+          },
+          "boundingBox": {
+            "x": 2,
+            "y": 524,
+            "width": 1022,
+            "height": 169
+          }
+        },
+        {
+          "filename": "hybills-burger-sauce.png",
+          "path": "/assets/BURGER/hybills-burger-sauce.png",
+          "purpose": "Creamy chili-mayo relish drip and spiced seasoning glaze",
+          "stackingOrder": 2,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": 65,
+            "scale": 1.0,
+            "rotate": 1
+          },
+          "boundingBox": {
+            "x": 0,
+            "y": 623,
+            "width": 1024,
+            "height": 160
+          }
+        },
+        {
+          "filename": "hybills-burger-bottom-bun.png",
+          "path": "/assets/BURGER/hybills-burger-bottom-bun.png",
+          "purpose": "Toasted brioche bottom bun foundation",
+          "stackingOrder": 1,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 20%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": 115,
+            "scale": 0.99,
+            "rotate": 0
+          },
+          "boundingBox": {
+            "x": 0,
+            "y": 729,
+            "width": 1024,
+            "height": 295
+          }
+        },
+        {
+          "filename": "hybills-burger-crumbs.png",
+          "path": "/assets/BURGER/hybills-burger-crumbs.png",
+          "purpose": "Floating sesame seeds, crispy crumb specs and grill seasoning particles",
+          "stackingOrder": 8,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "restY": 0,
+            "explodedY": 0,
+            "float": true,
+            "floatAmp": 15
+          },
+          "boundingBox": {
+            "x": 225,
+            "y": 171,
+            "width": 114,
+            "height": 103
+          }
+        },
+        {
+          "filename": "hybills-burger-fries.png",
+          "path": "/assets/BURGER/hybills-burger-fries.png",
+          "purpose": "Crispy golden seasoned fries carton supporting side",
+          "stackingOrder": 0,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 80%",
+          "independentMotion": true,
+          "motionVectors": {
+            "offsetX": -280,
+            "offsetY": 80,
+            "floatAmp": 10
+          },
+          "boundingBox": {
+            "x": 53,
+            "y": 285,
+            "width": 437,
+            "height": 739
+          }
+        },
+        {
+          "filename": "hybills-burger-drink.png",
+          "path": "/assets/BURGER/hybills-burger-drink.png",
+          "purpose": "Iced cola condensation-beaded cup with sleek straw",
+          "stackingOrder": 0,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 80%",
+          "independentMotion": true,
+          "motionVectors": {
+            "offsetX": 280,
+            "offsetY": 60,
+            "floatAmp": 8
+          },
+          "boundingBox": {
+            "x": 490,
+            "y": 74,
+            "width": 534,
+            "height": 950
+          }
+        }
+      ]
+    },
+    "PIZZA": {
+      "name": "Scene 2 \u2014 Artisan Pizza Showpiece",
+      "animationType": "Slice-fan outward rotation and pulling tension",
+      "layers": [
+        {
+          "filename": "hybills-pizza-whole.png",
+          "path": "/assets/PIZZA/hybills-pizza-whole.png",
+          "purpose": "Master artisan blistered sourdough pizza base",
+          "stackingOrder": 1,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "scale": 1.0,
+            "rotate": 0
+          }
+        },
+        {
+          "filename": "hybills-pizza-slice-01.png",
+          "path": "/assets/PIZZA/hybills-pizza-slice-01.png",
+          "purpose": "Elevated pizza slice with stretching melted mozzarella cheese trailing",
+          "stackingOrder": 4,
+          "requiresAlpha": true,
+          "recommendedAnchor": "30% 70%",
+          "independentMotion": true,
+          "motionVectors": {
+            "pullDistance": 80,
+            "angle": -25,
+            "elevation": 40
+          }
+        },
+        {
+          "filename": "hybills-pizza-slice-02.png",
+          "path": "/assets/PIZZA/hybills-pizza-slice-02.png",
+          "purpose": "Secondary sector slice for rotational fan animation",
+          "stackingOrder": 3,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "fanAngle": 18,
+            "fanOffset": 35
+          }
+        },
+        {
+          "filename": "hybills-pizza-basil.png",
+          "path": "/assets/PIZZA/hybills-pizza-basil.png",
+          "purpose": "Fragrant fresh green basil garnish leaves",
+          "stackingOrder": 5,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "float": true,
+            "floatAmp": 12
+          }
+        },
+        {
+          "filename": "hybills-pizza-particles.png",
+          "path": "/assets/PIZZA/hybills-pizza-particles.png",
+          "purpose": "Floating red pepper chili flakes and oregano seasoning specs",
+          "stackingOrder": 6,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "float": true,
+            "floatAmp": 18
+          }
+        }
+      ]
+    },
+    "JOLLOF": {
+      "name": "Scene 3 \u2014 Local Delicacies / Nigerian Jollof Hero",
+      "animationType": "Bowl elevation with subtle floating ingredient parallax",
+      "layers": [
+        {
+          "filename": "hybills-jollof-bowl.png",
+          "path": "/assets/JOLLOF/hybills-jollof-bowl.png",
+          "purpose": "Luxury matte dark ceramic plating bowl foundation",
+          "stackingOrder": 1,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 80%",
+          "independentMotion": true,
+          "motionVectors": {
+            "elevation": -20
+          }
+        },
+        {
+          "filename": "hybills-jollof-rice.png",
+          "path": "/assets/JOLLOF/hybills-jollof-rice.png",
+          "purpose": "Authentic smoky reddish-orange long-grain party jollof rice mound",
+          "stackingOrder": 2,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 60%",
+          "independentMotion": true,
+          "motionVectors": {
+            "elevation": -28
+          }
+        },
+        {
+          "filename": "hybills-jollof-plantain.png",
+          "path": "/assets/JOLLOF/hybills-jollof-plantain.png",
+          "purpose": "Golden-brown caramelized fried sweet plantain slices (dodo)",
+          "stackingOrder": 3,
+          "requiresAlpha": true,
+          "recommendedAnchor": "40% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "floatY": -45,
+            "floatX": -15,
+            "rotate": -3
+          }
+        },
+        {
+          "filename": "hybills-jollof-chicken.png",
+          "path": "/assets/JOLLOF/hybills-jollof-chicken.png",
+          "purpose": "Succulent roasted chicken with glistening spiced pepper glaze",
+          "stackingOrder": 4,
+          "requiresAlpha": true,
+          "recommendedAnchor": "60% 40%",
+          "independentMotion": true,
+          "motionVectors": {
+            "floatY": -55,
+            "floatX": 15,
+            "rotate": 2.5
+          }
+        },
+        {
+          "filename": "hybills-jollof-garnish.png",
+          "path": "/assets/JOLLOF/hybills-jollof-garnish.png",
+          "purpose": "Fresh sliced red scotch bonnet pepper strips and scallions",
+          "stackingOrder": 5,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 50%",
+          "independentMotion": true,
+          "motionVectors": {
+            "floatY": -75,
+            "floatAmp": 20
+          }
+        },
+        {
+          "filename": "hybills-jollof-steam.png",
+          "path": "/assets/JOLLOF/hybills-jollof-steam.png",
+          "purpose": "Atmospheric warm vapor steam overlay drifting upward",
+          "stackingOrder": 6,
+          "requiresAlpha": true,
+          "recommendedAnchor": "50% 30%",
+          "independentMotion": true,
+          "motionVectors": {
+            "driftY": -60,
+            "opacityPulse": [
+              0.3,
+              0.7
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

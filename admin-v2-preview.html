@@ -1,0 +1,614 @@
+<title>HyBills Admin</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed left sidebar + sticky topbar + scrolling workspace; drawer + dialog overlay. Dark-first navy with cyan accent (matches HyBills brand tokens; swap for src/styles/hybills-tokens.css values when integrating). */
+:root{
+  --bg:#0a1224; --side:#0d172c; --surface:#111d37; --surface2:#16254a; --line:rgba(148,171,214,.16); --line2:rgba(148,171,214,.28);
+  --fg:#e9effc; --muted:#93a4c6; --faint:#62759c;
+  --accent:#22d3ee; --accent-ink:#06222b; --accent-soft:rgba(34,211,238,.13);
+  --good:#34d399; --good-soft:rgba(52,211,153,.14); --warn:#fbbf24; --warn-soft:rgba(251,191,36,.14);
+  --crit:#fb7185; --crit-soft:rgba(251,113,133,.15); --info:#7aa7ff; --info-soft:rgba(122,167,255,.15);
+  --shadow:0 18px 50px rgba(0,0,0,.45);
+  --display:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){
+  --bg:#f1f5fb; --side:#0d172c; --surface:#ffffff; --surface2:#eef3fb; --line:rgba(16,35,74,.12); --line2:rgba(16,35,74,.24);
+  --fg:#0d1a36; --muted:#4d5f82; --faint:#7b8cab; --accent:#0891b2; --accent-ink:#ffffff; --accent-soft:rgba(8,145,178,.11);
+  --good:#0f9b6c; --good-soft:rgba(15,155,108,.11); --warn:#b7791f; --warn-soft:rgba(183,121,31,.13);
+  --crit:#d6304f; --crit-soft:rgba(214,48,79,.1); --info:#2f62d8; --info-soft:rgba(47,98,216,.1); --shadow:0 18px 50px rgba(13,26,54,.18); color-scheme:light}}
+:root[data-theme="light"]{
+  --bg:#f1f5fb; --side:#0d172c; --surface:#ffffff; --surface2:#eef3fb; --line:rgba(16,35,74,.12); --line2:rgba(16,35,74,.24);
+  --fg:#0d1a36; --muted:#4d5f82; --faint:#7b8cab; --accent:#0891b2; --accent-ink:#ffffff; --accent-soft:rgba(8,145,178,.11);
+  --good:#0f9b6c; --good-soft:rgba(15,155,108,.11); --warn:#b7791f; --warn-soft:rgba(183,121,31,.13);
+  --crit:#d6304f; --crit-soft:rgba(214,48,79,.1); --info:#2f62d8; --info-soft:rgba(47,98,216,.1); --shadow:0 18px 50px rgba(13,26,54,.18); color-scheme:light}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--display);font-size:14px;line-height:1.45;margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:6px}
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%}
+.side{background:var(--side);color:#e9effc;border-right:1px solid rgba(148,171,214,.14);position:sticky;top:0;height:100vh;display:flex;flex-direction:column;padding:18px 12px;gap:14px;overflow-y:auto;z-index:30}
+.brand{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:4px 8px;--hb-text:#e9fbff;--hb-cyan:#22d3ee;--hb-muted:#8db3be}
+.brand svg{flex:none}
+.brand-sub{display:block;color:#8ea1c6;font-size:11px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;color:#b4c3e2;text-decoration:none;font-weight:500;cursor:pointer;position:relative}
+.nav a:hover{background:rgba(148,171,214,.1);color:#fff}
+.nav a[aria-current="page"]{background:rgba(34,211,238,.14);color:#fff}
+.nav a[aria-current="page"]::before{content:"";position:absolute;left:-12px;top:8px;bottom:8px;width:3px;border-radius:0 3px 3px 0;background:#22d3ee}
+.nav a.locked{opacity:.45}
+.nav svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.nav .badge{margin-left:auto;font-size:11px;background:#fb7185;color:#2b0710;border-radius:99px;padding:0 7px;font-weight:700}
+.side-foot{margin-top:auto;font-size:11px;color:#8ea1c6;padding:8px;border-top:1px solid rgba(148,171,214,.14)}
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:12px;align-items:center;padding:10px max(20px,env(safe-area-inset-right,0px)) 10px 24px;background:color-mix(in srgb,var(--bg) 86%,transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.iconbtn.burger{display:none}.pop[hidden],.iconbtn .dot[hidden]{display:none}
+.crumbs{font-size:12px;color:var(--muted);display:flex;gap:6px;white-space:nowrap}
+.crumbs b{color:var(--fg);font-weight:600}
+.gsearch{flex:1;max-width:420px;margin-left:auto;position:relative}
+.gsearch input[type=search]{width:100%;padding:8px 12px 8px 34px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.gsearch svg{position:absolute;left:10px;top:9px;width:16px;height:16px;stroke:var(--faint);fill:none;stroke-width:1.8}
+.iconbtn{position:relative;width:36px;height:36px;border-radius:10px;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center}
+.iconbtn svg{width:17px;height:17px;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.iconbtn .dot{position:absolute;top:-4px;right:-4px;background:var(--crit);color:#fff;font-size:10px;border-radius:99px;min-width:16px;height:16px;display:grid;place-items:center;font-weight:700;padding:0 4px}
+.me{display:flex;gap:9px;align-items:center;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:4px 10px 4px 4px;cursor:pointer}
+.avatar{width:28px;height:28px;border-radius:9px;background:linear-gradient(135deg,#22d3ee,#2563eb);color:#04131c;font-weight:800;display:grid;place-items:center;font-size:12px}
+.me span{font-size:12px;font-weight:600;text-align:left;line-height:1.2}.me small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+.pop{position:absolute;right:0;top:46px;width:270px;background:var(--surface);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:10px;z-index:40}
+.pop label{font-size:11px;color:var(--muted);display:flex;flex-direction:column;gap:4px;text-transform:uppercase;letter-spacing:.06em}
+.pop select{text-transform:none;letter-spacing:0;font-size:13px}
+.demobar{background:var(--warn-soft);border-bottom:1px solid color-mix(in srgb,var(--warn) 40%,transparent);color:var(--fg);padding:7px max(20px,env(safe-area-inset-right,0px)) 7px 24px;font-size:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.demobar b{color:var(--warn)}
+.work{padding:22px max(24px,env(safe-area-inset-right,0px)) 40px 24px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.ph{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.ph h1{font-size:24px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+.ph p{margin:4px 0 0;color:var(--muted);max-width:68ch}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+select,input[type=text],input[type=search],input[type=number],textarea{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 10px;min-width:0}
+textarea{width:100%;resize:vertical}
+.btn{border:1px solid var(--line2);background:var(--surface);border-radius:9px;padding:7px 13px;cursor:pointer;font-weight:600;font-size:13px;display:inline-flex;gap:7px;align-items:center}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.dng{background:var(--crit-soft);border-color:color-mix(in srgb,var(--crit) 55%,transparent);color:var(--crit)}
+.btn.sm{padding:4px 9px;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.g2{grid-template-columns:minmax(0,1.7fr) minmax(0,1fr)}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g22{grid-template-columns:repeat(2,minmax(0,1fr))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;min-width:0}
+.card h2{font-size:14px;margin:0 0 2px;font-weight:700}
+.card .sub{color:var(--muted);font-size:12px;margin:0 0 12px}
+.card-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
+.tile{display:flex;flex-direction:column;gap:6px}
+.tile .lbl{font-size:12px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.tile .val{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile .val.na{font-size:18px;color:var(--faint);font-weight:700}
+.tile .note{font-size:12px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;white-space:nowrap;border:1px solid transparent}
+.chip::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.chip.good{color:var(--good);background:var(--good-soft)}.chip.warn{color:var(--warn);background:var(--warn-soft)}.chip.crit{color:var(--crit);background:var(--crit-soft)}
+.chip.info{color:var(--info);background:var(--info-soft)}.chip.mute{color:var(--muted);background:var(--surface2)}
+.chip.demo{color:var(--warn);background:transparent;border-color:color-mix(in srgb,var(--warn) 55%,transparent);font-size:10px;letter-spacing:.07em;padding:1px 6px}
+.chip.demo::before,.chip.lock::before{display:none}
+.chip.lock{color:var(--muted);background:var(--surface2);font-size:10px;letter-spacing:.05em;padding:1px 6px;text-transform:uppercase}
+.mono{font-family:var(--mono);font-size:12px}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:640px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:9px 12px;background:var(--surface2);font-weight:700;white-space:nowrap}
+td{padding:10px 12px;border-top:1px solid var(--line);vertical-align:middle}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr[data-row]{cursor:pointer}tbody tr[data-row]:hover{background:var(--accent-soft)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.toolbar input{flex:1;min-width:180px;max-width:320px}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:10px;color:var(--muted);font-size:12px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;color:var(--muted);font-weight:600;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
+.state{border:1px dashed var(--line2);border-radius:14px;padding:34px 20px;text-align:center;color:var(--muted);display:flex;flex-direction:column;gap:8px;align-items:center}
+.state b{color:var(--fg);font-size:15px}
+.state.err{border-color:color-mix(in srgb,var(--crit) 55%,transparent);background:var(--crit-soft)}
+.sk{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--surface2),var(--line),var(--surface2));background-size:200% 100%;animation:sh 1.3s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.sk{animation:none}*{scroll-behavior:auto!important}}
+.list{display:flex;flex-direction:column}
+.li{display:flex;gap:12px;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.li:first-child{border-top:0}
+.li small{color:var(--muted);display:block}
+.kv{display:grid;grid-template-columns:130px minmax(0,1fr);gap:8px 12px;font-size:13px}.kv dt{color:var(--muted)}.kv dd{margin:0;word-break:break-word}
+.scrim{position:fixed;inset:0;background:rgba(3,8,20,.6);z-index:60;display:flex;justify-content:flex-end}
+.scrim.mid{justify-content:center;align-items:center;padding:16px}
+.drawer{width:min(520px,100%);background:var(--surface);border-left:1px solid var(--line2);height:100%;overflow-y:auto;padding:20px max(20px,env(safe-area-inset-right,0px)) 30px 20px;display:flex;flex-direction:column;gap:16px;box-shadow:var(--shadow)}
+.dialog{width:min(480px,100%);background:var(--surface);border:1px solid var(--line2);border-radius:16px;padding:20px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;max-height:100%;overflow:auto}
+.dialog h3{margin:0;font-size:17px}
+.box{background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:12px;color:var(--muted)}
+.box b{color:var(--fg)}
+.toast{position:fixed;bottom:max(20px,env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;z-index:90;max-width:min(92vw,520px);box-shadow:var(--shadow)}
+.chart{position:relative}
+.chart svg{display:block;width:100%}
+.tip{position:absolute;pointer-events:none;background:var(--surface2);border:1px solid var(--line2);border-radius:10px;padding:7px 10px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;z-index:5}
+.bar{display:grid;grid-template-columns:120px minmax(0,1fr) 92px;gap:10px;align-items:center;margin:9px 0;font-size:12px}
+.bar i{display:block;height:8px;border-radius:0 4px 4px 0;background:var(--accent)}
+.bar .t{background:var(--surface2);border-radius:0 4px 4px 0}
+.bar .v{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+.sw{display:inline-flex;width:38px;height:22px;border-radius:99px;background:var(--surface2);border:1px solid var(--line2);position:relative;cursor:pointer;padding:0;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:transform .15s}
+.sw[aria-checked="true"]{background:var(--accent-soft);border-color:var(--accent)}.sw[aria-checked="true"]::after{transform:translateX(16px);background:var(--accent)}
+.sw:disabled{opacity:.45;cursor:not-allowed}
+.matrix td,.matrix th{text-align:center;padding:7px 9px}.matrix td:first-child,.matrix th:first-child{text-align:left}
+.yes{color:var(--good);font-weight:800}.no{color:var(--faint)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;background:var(--accent)}
+@media (max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g2,.g3{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;left:0;top:0;bottom:0;width:min(280px,86vw);transform:translateX(-102%);transition:transform .2s;padding-left:max(12px,env(safe-area-inset-left,0px))}
+  .side.open{transform:none;box-shadow:var(--shadow)}
+  .iconbtn.burger{display:grid}
+  .top{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));flex-wrap:wrap}
+  .work,.demobar{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .gsearch{order:5;max-width:none;flex-basis:100%;margin-left:0}
+  .crumbs{overflow:hidden;text-overflow:ellipsis}.me span{display:none}.me{padding:4px}
+  .g22{grid-template-columns:minmax(0,1fr)}
+  .bar{grid-template-columns:90px minmax(0,1fr) 78px}
+}
+@media (max-width:480px){.g4{grid-template-columns:minmax(0,1fr)}.kv{grid-template-columns:100px minmax(0,1fr)}.ph h1{font-size:21px}}
+/* ---- Approved Hybills brand CSS, copied verbatim from the Hybills Apps prototype (customer.html lines 198-209) ---- */
+/* Hybills brand mark + lockup (shared/brand.js) */
+.hb-mark{display:inline-block;flex:none;overflow:visible;vertical-align:middle}
+.hb-lockup{display:inline-flex;align-items:center;gap:calc(var(--s,44px)*.22)}
+.hb-lt{display:flex;flex-direction:column;line-height:1.08}
+.hb-name{font-weight:800;font-size:calc(var(--s,44px)*.5);letter-spacing:-.03em;color:var(--hb-text)}
+.hb-sub{font-style:normal;font-weight:700;font-size:calc(var(--s,44px)*.215);letter-spacing:.3em;text-transform:uppercase;color:var(--hb-cyan);margin-top:2px}
+.hb-tag{font-style:normal;font-weight:600;font-size:calc(var(--s,44px)*.2);letter-spacing:.06em;color:var(--hb-muted);margin-top:3px;white-space:nowrap}
+.hb-lockup.stack{flex-direction:column;gap:6px;text-align:center}
+.hb-lockup.stack .hb-lt{align-items:center}
+.hb-lockup.stack .hb-name{font-size:calc(var(--s,44px)*.3);letter-spacing:-.04em}
+.hb-lockup.stack .hb-sub{font-size:calc(var(--s,44px)*.115);margin-top:4px}
+.hb-lockup.stack .hb-tag{font-size:calc(var(--s,44px)*.11);margin-top:6px}
+</style>
+
+<div class="app" id="app">
+  <aside class="side" id="side" aria-label="Primary">
+    <div class="brand"><div id="brandlogo"></div><small class="brand-sub">Admin · Stenco Apex Global Limited</small></div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">More Services. More Possibilities.<br>Prototype build · DEMO DATA</div>
+  </aside>
+  <div class="main">
+    <header class="top">
+      <button class="iconbtn burger" id="burger" aria-label="Open navigation"><svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div class="crumbs" id="crumbs"></div>
+      <div class="gsearch"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="gs" type="search" placeholder="Search customers or order references, press Enter" aria-label="Global search"></div>
+      <button class="iconbtn" id="bell" aria-label="Open alerts"><svg viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1112 0v6l1.5 2h-15zM10 21h4"/></svg><span class="dot" id="belln"></span></button>
+      <div style="position:relative">
+        <button class="me" id="me" aria-haspopup="true" aria-expanded="false"><div class="avatar" id="av">SA</div><span id="mename"></span></button>
+        <div class="pop" id="pop" hidden>
+          <label>Signed in as (role preview)<select id="role"></select></label>
+          <label>Data state preview<select id="dstate"><option value="ready">Loaded</option><option value="loading">Loading</option><option value="error">Error</option></select></label>
+          <label>Theme<select id="theme"><option value="">System</option><option value="dark">Dark</option><option value="light">Light</option></select></label>
+          <div class="box">Role preview changes the interface only. Real access must be enforced by the server on every request.</div>
+        </div>
+      </div>
+    </header>
+    <div class="demobar"><b>DEMO DATA</b> No live backend is connected. Figures, people, references and results below are fictional and do not describe real HyBills activity. <a href="#settings" style="color:var(--accent)">What is functional vs simulated</a></div>
+    <main class="work" id="work" tabindex="-1"></main>
+  </div>
+</div>
+<div id="layer"></div>
+
+<script>
+/* ---- Approved Hybills brand mark script, copied verbatim from the Hybills Apps prototype (customer.html lines 295-400) ---- */
+/* Hybills brand mark — single source of truth for the logo.
+   Mark = custom H + integrated airplane orbit.
+   - The H is a fixed vector (never animated).
+   - The airplane flies a tilted orbit that passes BEHIND the H on the far side and IN FRONT on the near side.
+   - Animation is SMIL animateMotion on the plane only. prefers-reduced-motion pauses it at a composed pose.
+   - Works as: logo(size, opts) -> SVG string, lockup(opts) -> HTML string.
+   Zero dependencies (safe to load in Node for asset export).
+
+   H geometry (64-grid): two stems + crossbar share ONE ascent angle (~20°). The left stem is cut at the bottom and the
+   right stem at the top by that same angle, so the H is point-symmetric and reads as lift-off, not as a font glyph. */
+(function () {
+  const W = typeof window !== 'undefined' ? window : globalThis;
+  let uid = 0;
+  const CX = 32, CY = 32, RX = 31, RY = 10.5, TILT = -24, DUR = 9, POSE = 0.40;
+  const ORBIT = `M${CX - RX} ${CY} a${RX} ${RY} 0 1 0 ${2 * RX} 0 a${RX} ${RY} 0 1 0 ${-2 * RX} 0`;
+  const H_PATH = 'M15 12 L26 12 L26 48 L15 52 Z M38 16 L49 12 L49 52 L38 52 Z M25 30 L39 25 L39 34 L25 39 Z';
+  // top-down airplane, nose toward +x, ~15 units long (scaled at use)
+  const PLANE = 'M7 0 C7 -1.3 6 -1.5 4 -1.5 L-5 -1.5 L-6.5 0 L-5 1.5 L4 1.5 C6 1.5 7 1.3 7 0 Z ' +
+    'M2 -1.4 L-2 -7 L-4 -7 L-1.5 -1.4 Z M2 1.4 L-2 7 L-4 7 L-1.5 1.4 Z ' +
+    'M-4.5 -1.3 L-7 -3.8 L-8 -3.8 L-6.3 -1.3 Z M-4.5 1.3 L-7 3.8 L-8 3.8 L-6.3 1.3 Z';
+
+  // arc-length pose on the orbit (matches how SMIL animateMotion advances along the path)
+  function poseAt(f) {
+    const N = 4000, pts = [];
+    let len = 0, px = null, py = null;
+    for (let i = 0; i <= N; i++) {
+      const th = Math.PI - (Math.PI * 2 * i) / N;       // left -> bottom(front) -> right -> top(back)
+      const x = CX + RX * Math.cos(th), y = CY + RY * Math.sin(th);
+      if (px !== null) len += Math.hypot(x - px, y - py);
+      pts.push([x, y, len]); px = x; py = y;
+    }
+    const target = f * len;
+    let i = pts.findIndex(p => p[2] >= target); if (i < 1) i = 1;
+    const a = pts[i - 1], b = pts[i];
+    return { x: b[0], y: b[1], deg: (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI };
+  }
+  const POSE_XY = poseAt(POSE);
+
+  /** logo(size, opts)
+   *  opts: animate (default true), mono (single color string), bg (colour used to separate ring/plane from H),
+   *        heavy (thicker ring + bigger plane for tiny sizes), label */
+  function logo(size, o) {
+    size = size || 48;
+    if (typeof o === 'string') o = { mono: o };
+    o = o || {};
+    const id = 'hb' + (++uid), mono = o.mono, bg = o.bg || '#041219';
+    const animate = o.animate !== false && size >= 22;
+    const heavy = !!o.heavy, small = size < 48;
+    const ps = o.planeScale || (heavy ? 0.95 : small ? 0.92 : 0.72);
+    const rw = heavy ? 2.8 : small ? 2.0 : 1.7;
+    const hFill = mono || `url(#${id}g)`, ring = mono || `url(#${id}r)`, planeFill = mono || '#ffffff';
+    const planeG = `<g transform="scale(${ps})"><path d="${PLANE}" fill="${planeFill}" ${mono ? '' : `stroke="${bg}" stroke-width="${(0.9 / ps * 0.72).toFixed(2)}" stroke-linejoin="round"`}/></g>`;
+    const T = `rotate(${TILT} ${CX} ${CY})`;
+    const mover = animate
+      ? `<g><animateMotion dur="${DUR}s" repeatCount="indefinite" rotate="auto" path="${ORBIT}"/>${planeG}</g>`
+      : `<g transform="translate(${POSE_XY.x.toFixed(2)} ${POSE_XY.y.toFixed(2)}) rotate(${POSE_XY.deg.toFixed(1)})">${planeG}</g>`;
+    // mono only: cut a small gap in the ring around the plane so it stays legible in a single colour
+    const planeMask = `<g transform="scale(${ps})"><path d="${PLANE}" fill="#000" stroke="#000" stroke-width="${(2.8 / ps).toFixed(2)}" stroke-linejoin="round"/></g>`;
+    const moverMask = animate
+      ? `<g><animateMotion dur="${DUR}s" repeatCount="indefinite" rotate="auto" path="${ORBIT}"/>${planeMask}</g>`
+      : `<g transform="translate(${POSE_XY.x.toFixed(2)} ${POSE_XY.y.toFixed(2)}) rotate(${POSE_XY.deg.toFixed(1)})">${planeMask}</g>`;
+    const ringMask = mono ? `<mask id="${id}n" maskUnits="userSpaceOnUse" x="-20" y="-20" width="110" height="110"><rect x="-20" y="-20" width="110" height="110" fill="#fff"/>${moverMask}</mask>` : '';
+    const rm = mono ? ` mask="url(#${id}n)"` : '';
+    return `<svg class="logo hb-mark" data-hb-mark data-animated="${animate}" width="${size}" height="${size}" viewBox="-6 -6 76 76" role="img" aria-label="${o.label || 'Hybills'}" xmlns="http://www.w3.org/2000/svg">` +
+      `<defs><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8af0fb"/><stop offset="1" stop-color="#14b8a6"/></linearGradient>` +
+      `<linearGradient id="${id}r" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="64" y2="0"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#34d399"/></linearGradient>` +
+      ringMask + (mono ? `<mask id="${id}m" maskUnits="userSpaceOnUse" x="-6" y="-6" width="76" height="76"><rect x="-6" y="-6" width="76" height="76" fill="#fff"/><g transform="${T}" clip-path="url(#${id}f)"><path d="${ORBIT}" fill="none" stroke="#000" stroke-width="${rw + 3.2}"/></g></mask>` : '') + `<clipPath id="${id}b"><rect x="-20" y="-20" width="110" height="52"/></clipPath><clipPath id="${id}f"><rect x="-20" y="32" width="110" height="52"/></clipPath></defs>` +
+      // far side of the orbit: behind the H
+      `<g transform="${T}" clip-path="url(#${id}b)"><path d="${ORBIT}" fill="none" stroke="${ring}" stroke-width="${rw}" opacity=".42"${rm}/><g class="hb-plane hb-plane-b">${mover}</g></g>` +
+      // the H — stationary
+      `<path class="hb-h" d="${H_PATH}" fill="${hFill}" stroke="${hFill}" stroke-width="2.2" stroke-linejoin="round"${mono ? ` mask="url(#${id}m)"` : ''}/>` +
+      // near side of the orbit: in front of the H (with a thin separator so it reads as passing over)
+      `<g transform="${T}" clip-path="url(#${id}f)">${mono ? '' : `<path d="${ORBIT}" fill="none" stroke="${bg}" stroke-width="${rw + 2.4}" opacity=".9"/>`}<path d="${ORBIT}" fill="none" stroke="${ring}" stroke-width="${rw}"${rm}/><g class="hb-plane hb-plane-f">${mover}</g></g>` +
+      `</svg>`;
+  }
+
+  /** lockup({size, stack, compact, animate}) -> Hybills / Connect / Pay · Travel · More */
+  function lockup(o) {
+    o = o || {};
+    const size = o.size || 44;
+    return `<span class="hb-lockup${o.stack ? ' stack' : ''}" style="--s:${size}px">${logo(Math.round(size * (o.stack ? 1.3 : 1.22)), { animate: o.animate })}` +
+      `<span class="hb-lt"><b class="hb-name">Hybills</b><i class="hb-sub">Connect</i>${o.compact ? '' : '<em class="hb-tag">Pay · Travel · More</em>'}</span></span>`;
+  }
+
+  // reduced motion: pause the plane on a composed pose (fully static, still beautiful); resume if the preference flips
+  const Brand = {
+    DUR, POSE, ORBIT, H_PATH, PLANE, POSE_XY,
+    sync(root) {
+      if (typeof document === 'undefined') return;
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      (root || document).querySelectorAll('svg[data-hb-mark][data-animated="true"]').forEach(s => {
+        try { if (reduce) { s.pauseAnimations(); s.setCurrentTime(DUR * POSE); } else if (s.animationsPaused()) s.unpauseAnimations(); } catch (e) {}
+      });
+    },
+  };
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const start = () => {
+      new MutationObserver(m => { for (const r of m) for (const n of r.addedNodes) if (n.nodeType === 1 && (n.matches('svg[data-hb-mark]') || n.querySelector('svg[data-hb-mark]'))) { Brand.sync(n.parentNode || document); return; } })
+        .observe(document.documentElement, { childList: true, subtree: true });
+      try { matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => Brand.sync()); } catch (e) {}
+      Brand.sync();
+    };
+    document.documentElement ? start() : addEventListener('DOMContentLoaded', start);
+  }
+  W.logo = logo; W.lockup = lockup; W.Brand = Brand;
+})();
+</script>
+<script>
+'use strict';
+/* ===== Formatting & helpers ===== */
+const CUR='₦'; // single constant; confirm with Commander before integrating
+const $=(s,e=document)=>e.querySelector(s), $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=n=>CUR+Math.round(n).toLocaleString('en-US');
+const compact=n=>n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(Math.round(n));
+const ANCHOR=new Date(2026,9,14,12,0,0);
+const dstr=d=>d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+const dtstr=d=>d.toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const ago=(days,h=0)=>new Date(ANCHOR.getTime()-days*864e5-h*36e5);
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const R=rng(20261014);
+const pick=a=>a[Math.floor(R()*a.length)];
+const TONE={Active:'good',Successful:'good',Approved:'good',Healthy:'good',Delivered:'good',Resolved:'good',Success:'good',Pending:'warn','In review':'warn','Needs info':'warn',Submitted:'warn','Pending verification':'warn',Open:'warn',Queued:'warn',Refunded:'info',Disputed:'warn',Suspended:'crit',Failed:'crit',Rejected:'crit',Cancelled:'mute','Not connected':'mute',NOT_CONNECTED:'mute',Demo:'info',Unverified:'warn',Denied:'crit',Simulated:'info',Acknowledged:'mute',Blocked:'crit'};
+const chip=(t,tone)=>`<span class="chip ${tone||TONE[t]||'mute'}">${esc(t)}</span>`;
+const demoChip='<span class="chip demo">DEMO</span>';
+
+/* ===== Permissions (UI mirror of what the server must enforce) ===== */
+const CAPS=[ // key, label, restricted
+ ['overview.view','View overview'],['customers.view','View customers'],['customers.pii','Reveal customer contact details',1],['customers.suspend','Suspend / reactivate customers',1],
+ ['vendors.view','View vendors'],['kyc.review','Approve / reject KYC',1],['kyc.docs','Open verification documents',1],
+ ['services.view','View services & providers'],['services.configure','Enable / disable services',1],
+ ['orders.view','View orders & transactions'],['orders.cancel','Cancel pending orders',1],['orders.dispute','Flag disputes'],['orders.refund','Refund / adjust',1],['ledger.view','View wallet ledger'],
+ ['commissions.view','View commissions'],['commissions.edit','Edit commission rules',1],['reports.export','Export reports',1],
+ ['staff.view','View staff & roles'],['staff.manage','Invite / change staff roles',1],['audit.view','View audit log'],
+ ['notifications.view','View notifications & health'],['notifications.retry','Retry failed notifications'],['alerts.ack','Acknowledge alerts'],
+ ['settings.view','View platform settings'],['settings.change','Change platform settings',1]];
+const ROLES={
+ super:{label:'Super Admin',short:'SA',caps:'*'},
+ ops:{label:'Operations',short:'OP',caps:['overview.view','customers.view','customers.suspend','vendors.view','kyc.review','services.view','services.configure','orders.view','orders.cancel','orders.dispute','notifications.view','notifications.retry','alerts.ack']},
+ support:{label:'Support',short:'SU',caps:['overview.view','customers.view','customers.pii','vendors.view','orders.view','orders.dispute','notifications.view']},
+ finance:{label:'Finance',short:'FN',caps:['overview.view','orders.view','orders.refund','ledger.view','commissions.view','reports.export']},
+ auditor:{label:'Auditor (read-only)',short:'AU',caps:['overview.view','customers.view','vendors.view','services.view','orders.view','ledger.view','commissions.view','audit.view','notifications.view','staff.view','settings.view']}};
+const S={role:'super',dstate:'ready',kycReveal:{},pii:{}};
+const can=c=>{const r=ROLES[S.role].caps;return r==='*'||r.includes(c)};
+
+/* ===== Service/data layer: swap `api` for real HTTP calls later. Everything below is DEMO DATA ===== */
+const FN=['Adaeze','Bola','Chidi','Dami','Efe','Femi','Gift','Hauwa','Ifeanyi','Jide','Kemi','Lara','Musa','Ngozi','Obi','Peace','Qudus','Rita','Seun','Tola','Uche','Vera','Wale','Yemi','Zainab'];
+const LN=['Okafor','Bello','Adeyemi','Eze','Danjuma','Ojo','Nwosu','Ibrahim','Balogun','Umeh','Lawal','Okonkwo'];
+const SERV=[['Airtime',.30],['Data bundles',.27],['Electricity',.17],['Cable TV',.10],['Bill payments',.08],['Wallet funding',.08]];
+const D={customers:[],orders:[],vendors:[],audit:[],notes:[],alerts:[],ledger:[],staff:[]};
+for(let i=0;i<46;i++){const f=FN[i%FN.length],l=LN[(i*5+3)%LN.length];D.customers.push({id:'HB-C-'+(1001+i),name:f+' '+l,email:f.toLowerCase()+'.'+l.toLowerCase()+'@example.test',phone:'+000 000 '+String(100000+Math.floor(R()*899999)),status:i%13===5?'Suspended':i%9===4?'Pending verification':'Active',joined:ago(Math.floor(R()*420)+3),tier:pick(['Tier 1','Tier 2','Tier 3']),wallet:Math.floor(R()*90000)})}
+const OS=['Successful','Successful','Successful','Successful','Pending','Failed','Refunded'];
+for(let i=0;i<72;i++){const c=pick(D.customers),sv=pick(SERV)[0];D.orders.push({ref:'HB-O-'+String(48200+i*7),cust:c.id,custName:c.name,service:sv,amount:(Math.floor(R()*40)+1)*250,status:OS[Math.floor(R()*OS.length)],at:ago(Math.floor(R()*14),Math.floor(R()*20)),channel:pick(['Web','Mobile']),flag:false})}
+D.orders.sort((a,b)=>b.at-a.at);
+const VN=['Northgate Resellers','Brightline Utilities Agency','Sunrise Digital Hub','Keystone Pay Point','Harbor Mobile Services','Meridian Bill Agents','Lumen Data Traders','Atlas Service Desk','Pioneer Recharge Co'];
+VN.forEach((n,i)=>D.vendors.push({id:'HB-V-'+(301+i),name:n+' (demo)',type:pick(['Reseller','Agent','Utility agent']),submitted:ago(i*2+1),status:['Submitted','In review','In review','Needs info','Approved','Approved','Approved','Rejected','Submitted'][i],area:pick(['Zone 1','Zone 2','Zone 3'])+' · demo area',docs:[['Business registration',i%4===3?'Missing':'Received'],['Owner identity',i%3===1?'Pending review':'Received'],['Proof of address','Received']],orders:Math.floor(R()*500)}));
+['Admin sign-in','Role preview opened','Settings viewed','Customer record viewed','Order record viewed','Report filter applied','Alert acknowledged'].forEach((a,i)=>D.audit.push({id:'AU-'+(900-i),at:ago(0,i*3+1),actor:['Super Admin','Operations','Support','Finance'][i%4],action:a,target:['—','—','settings','HB-C-1004','HB-O-48256','Overview','AL-2'][i],outcome:'Simulated'}));
+D.alerts=[{id:'AL-1',sev:'warn',title:'Provider connections not configured',text:'No airtime, data, electricity or cable provider is connected. Orders cannot be fulfilled live.',status:'Open'},{id:'AL-2',sev:'crit',title:'flight.booking is NOT_CONNECTED',text:'Flight booking has no provider connection. Booking views stay empty by design.',status:'Open'},{id:'AL-3',sev:'info',title:'Commission rules awaiting approval',text:'No commission rate is set. Revenue summaries cannot be calculated.',status:'Open'},{id:'AL-4',sev:'warn',title:'Email and SMS providers not connected',text:'Delivery status cannot be confirmed for any message.',status:'Open'}];
+for(let i=0;i<14;i++){const c=D.customers[i*3];D.notes.push({id:'NT-'+(70+i),at:ago(Math.floor(i/3),i),channel:i%2?'SMS':'Email',to:c.id,type:pick(['Order receipt','Wallet alert','Sign-in code','KYC update']),status:i%4===1?'Failed':'Simulated',reason:i%4===1?'Provider not connected (demo)':'No provider confirmation (demo)'})}
+for(let i=0;i<20;i++){const o=D.orders[i];D.ledger.push({id:'LG-'+(5200+i),at:o.at,cust:o.cust,ref:o.ref,type:i%5===2?'Credit':'Debit',amount:o.amount,balance:Math.floor(R()*90000)})}
+[['Amaka Obi','Super Admin','Active','On'],['Tunde Ade','Operations','Active','On'],['Sade Lim','Support','Active','Off'],['Kayode Bis','Finance','Active','On'],['Ruth Aud','Auditor (read-only)','Pending invite','—']].forEach(s=>D.staff.push({name:s[0]+' (demo)',role:s[1],status:s[2],mfa:s[3]}));
+const SETTINGS=[{k:'maint',label:'Maintenance mode',desc:'Shows a maintenance notice to customers and blocks new orders.',on:false,perm:'settings.change'},{k:'signup',label:'New customer sign-ups',desc:'Allow new customer accounts to register.',on:true,perm:'settings.change'},{k:'vapps',label:'Vendor applications',desc:'Accept new vendor applications for review.',on:true,perm:'settings.change'},{k:'notify',label:'Outbound notifications',desc:'Allow email and SMS to be sent once providers are connected.',on:true,perm:'settings.change'}];
+const SVC=[['Airtime','Not connected','Unverified'],['Data bundles','Not connected','Unverified'],['Electricity','Not connected','Unverified'],['Cable TV','Not connected','Unverified'],['Bill payments','Not connected','Unverified'],['Wallet funding','Not connected','Demo'],['flight.booking','NOT_CONNECTED','Locked'],['Hotels','Not connected','Not built'],['Bus','Not connected','Not built'],['Train','Not connected','Not built']].map(s=>({name:s[0],conn:s[1],mode:s[2],enabled:false}));
+SVC.forEach(s=>{if(['Airtime','Data bundles','Electricity','Cable TV','Bill payments','Wallet funding'].includes(s.name))s.enabled=true});
+const api={ // every method resolves demo data; replace bodies with authenticated fetch() calls and keep the shapes
+  live:false,
+  async perform(action,payload){await new Promise(r=>setTimeout(r,120));return{ok:true,simulated:true,action,payload}}
+};
+// transaction series: 90 days, deterministic
+const SER=[];{const r=rng(77);for(let i=89;i>=0;i--){const d=new Date(ANCHOR.getTime()-i*864e5);const wk=[1.05,1,1.02,1.04,1.18,.92,.82][d.getDay()];const n=Math.round((520+(90-i)*3.1+r()*110)*wk);const fail=Math.round(n*(.018+r()*.016));SER.push({d,n,v:n*(4180+r()*600),fail})}}
+
+/* ===== Chart (SVG, drawn to scale, hover crosshair + tooltip) ===== */
+function niceMax(m){const p=Math.pow(10,Math.floor(Math.log10(m)));const f=m/p;return(f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p}
+function drawArea(host,pts,fmt,label){
+  const W=host.clientWidth||600,H=230,m={l:46,r:12,t:12,b:26};const iw=W-m.l-m.r,ih=H-m.t-m.b;
+  const mx=niceMax(Math.max(...pts.map(p=>p.y))*1.05),X=i=>m.l+(pts.length<2?0:i*iw/(pts.length-1)),Y=v=>m.t+ih-v/mx*ih;
+  let g='';for(let k=0;k<=4;k++){const v=mx*k/4,y=Y(v);g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1"/><text x="${m.l-8}" y="${y+4}" text-anchor="end" font-size="10.5" fill="var(--muted)">${fmt.axis(v)}</text>`}
+  const step=Math.max(1,Math.round(pts.length/5));let xl='';pts.forEach((p,i)=>{if(i%step===0&&i<=pts.length-1-Math.floor(step/3))xl+=`<text x="${X(i)}" y="${H-7}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${p.d.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</text>`});
+  const line=pts.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.y).toFixed(1)).join(''),last=pts.length-1;
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" height="${H}" role="img" aria-label="${esc(label)}"><defs><linearGradient id="ag" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".28"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>${g}${xl}
+  <path d="${line}L${X(last)} ${Y(0)}L${X(0)} ${Y(0)}Z" fill="url(#ag)"/><path d="${line}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>
+  <line id="xh" y1="${m.t}" y2="${m.t+ih}" stroke="var(--line2)" stroke-dasharray="3 3" visibility="hidden"/><circle id="xd" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" visibility="hidden"/>
+  <circle cx="${X(last)}" cy="${Y(pts[last].y)}" r="4.5" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><rect x="${m.l}" y="${m.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/></svg><div class="tip" hidden></div>`;
+  const tip=$('.tip',host),xh=$('#xh',host),xd=$('#xd',host),hit=$('#hit',host);
+  const show=e=>{const rc=hit.getBoundingClientRect(),i=Math.max(0,Math.min(last,Math.round((e.clientX-rc.left)/rc.width*last))),p=pts[i];xh.setAttribute('x1',X(i));xh.setAttribute('x2',X(i));xh.setAttribute('visibility','visible');xd.setAttribute('cx',X(i));xd.setAttribute('cy',Y(p.y));xd.setAttribute('visibility','visible');tip.hidden=false;tip.innerHTML=`<b>${dstr(p.d)}</b><br>${esc(label)}: ${fmt.full(p.y)}<br><span style="color:var(--warn)">DEMO DATA</span>`;const tx=X(i)+14;tip.style.left=(tx>W-170?X(i)-170:tx)+'px';tip.style.top='8px'};
+  hit.addEventListener('pointermove',show);hit.addEventListener('pointerleave',()=>{tip.hidden=true;xh.setAttribute('visibility','hidden');xd.setAttribute('visibility','hidden')});
+}
+
+/* ===== Table engine: search, filter, pagination, row detail ===== */
+const T={},TS={};
+function tableHTML(cfg){T[cfg.id]=cfg;TS[cfg.id]=TS[cfg.id]||{q:'',f:{},p:1,view:[]};const st=TS[cfg.id];
+  const fl=(cfg.filters||[]).map(f=>`<select data-tf="${cfg.id}" data-k="${f.k}" aria-label="${esc(f.label)}"><option value="">${esc(f.label)}: all</option>${f.opts.map(o=>`<option ${st.f[f.k]===o?'selected':''}>${esc(o)}</option>`).join('')}</select>`).join('');
+  return `<div class="toolbar"><input type="search" id="q-${cfg.id}" data-tq="${cfg.id}" placeholder="${esc(cfg.ph||'Search')}" value="${esc(st.q)}" aria-label="Search">${fl}${cfg.extra||''}</div><div id="tb-${cfg.id}"></div>`}
+function drawTable(id){const c=T[id],st=TS[id],host=$('#tb-'+id);if(!host)return;
+  let rows=c.rows().filter(r=>(!st.q||c.search(r).toLowerCase().includes(st.q.toLowerCase()))&&(c.filters||[]).every(f=>!st.f[f.k]||f.get(r)===st.f[f.k]));
+  st.view=rows;const ps=c.pageSize||8,pages=Math.max(1,Math.ceil(rows.length/ps));st.p=Math.min(st.p,pages);const slice=rows.slice((st.p-1)*ps,st.p*ps);
+  if(!rows.length){host.innerHTML=`<div class="state"><b>${esc(c.empty?.title||'No matching records')}</b><span>${esc(c.empty?.text||'Try a different search or clear a filter.')}</span><button class="btn sm" data-clear="${id}">Clear search and filters</button></div>`;return}
+  host.innerHTML=`<div class="tw"><table><thead><tr>${c.cols.map(k=>`<th class="${k.num?'num':''}">${esc(k.label)}</th>`).join('')}</tr></thead><tbody>${slice.map((r,i)=>`<tr ${c.onRow?`data-row="${id}:${(st.p-1)*ps+i}" tabindex="0"`:''}>${c.cols.map(k=>`<td class="${k.num?'num':''}">${k.r?k.r(r):esc(r[k.k])}</td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  <div class="pager"><span>${rows.length} record${rows.length===1?'':'s'} · page ${st.p} of ${pages}</span><span class="row"><button class="btn sm" data-pg="${id}:-1" ${st.p<=1?'disabled':''}>Previous</button><button class="btn sm" data-pg="${id}:1" ${st.p>=pages?'disabled':''}>Next</button></span></div>`}
+
+/* ===== Overlays: drawer, confirmation dialog, toast ===== */
+const layer=$('#layer');let lastFocus=null;
+function closeLayer(){layer.innerHTML='';lastFocus&&lastFocus.focus&&lastFocus.focus()}
+function drawer(title,html){lastFocus=document.activeElement;layer.innerHTML=`<div class="scrim" data-close><aside class="drawer" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="card-h"><h2 style="font-size:18px;margin:0">${esc(title)}</h2><button class="btn sm" data-close>Close</button></div>${html}</aside></div>`;$('.drawer button',layer).focus()}
+function toast(t){const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=t;document.body.appendChild(e);setTimeout(()=>e.remove(),3400)}
+function audit(action,target,outcome){D.audit.unshift({id:'AU-'+(901+D.audit.length),at:new Date(),actor:ROLES[S.role].label,action,target,outcome:outcome||'Simulated'})}
+function guard(perm){if(can(perm))return true;toast(`${ROLES[S.role].label} lacks "${perm}". The server must refuse this too.`);return false}
+function confirmDlg(o){ if(o.perm&&!guard(o.perm))return; lastFocus=document.activeElement;
+  layer.innerHTML=`<div class="scrim mid"><div class="dialog" role="alertdialog" aria-modal="true" aria-label="${esc(o.title)}"><h3>${esc(o.title)}</h3><p style="margin:0;color:var(--muted)">${o.body}</p>
+  <div class="box"><b>Expected outcome:</b> ${o.outcome}<br><b>Requires:</b> <span class="mono">${o.perm||'none'}</span> · <b>Mode:</b> simulated, no backend call</div>
+  ${o.reason?`<label style="font-size:12px;color:var(--muted)">Reason (required, recorded in the audit log)<textarea id="why" rows="3"></textarea></label>`:''}
+  <div class="row" style="justify-content:flex-end"><button class="btn" id="cx">Cancel</button><button class="btn ${o.danger?'dng':'pri'}" id="ok">${esc(o.label||'Confirm')}</button></div></div></div>`;
+  $('#cx').onclick=closeLayer;$('#ok').onclick=async()=>{const w=$('#why');if(o.reason&&(!w.value.trim())){w.style.borderColor='var(--crit)';w.focus();return}
+    $('#ok').disabled=true;await api.perform(o.audit,{reason:w&&w.value});o.run();audit(o.audit,o.target||'—','Simulated');closeLayer();toast(o.done||'Done (simulated)');render()};
+  (o.reason?$('#why'):$('#cx')).focus()}
+
+/* ===== Pages ===== */
+const PAGES=[
+ ['overview','Overview','overview.view','M3 12l9-8 9 8M5 10v10h5v-6h4v6h5V10'],
+ ['customers','Customers','customers.view','M16 11a4 4 0 10-8 0 4 4 0 008 0zM4 21a8 8 0 0116 0'],
+ ['vendors','Vendors & KYC','vendors.view','M4 7h16v13H4zM9 7V4h6v3M4 13h16'],
+ ['services','Services & providers','services.view','M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17.5l9 5 9-5'],
+ ['orders','Orders & transactions','orders.view','M5 4h14v17l-3-2-2 2-2-2-2 2-2-2-3 2zM9 9h6M9 13h6'],
+ ['commissions','Commissions & reports','commissions.view','M4 20V10M10 20V4M16 20v-7M22 20H2'],
+ ['staff','Staff & permissions','staff.view','M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4'],
+ ['audit','Audit logs','audit.view','M7 3h10l3 3v15H7zM10 11h7M10 15h7M10 7h4'],
+ ['notifications','Notifications & health','notifications.view','M6 17V11a6 6 0 1112 0v6l1.5 2h-15zM10 21h4'],
+ ['settings','Platform settings','settings.view','M12 15a3 3 0 100-6 3 3 0 000 6zM19 12l2-1-2-4-2 .5-1.5-1L15 4h-4l-.5 2.5-1.5 1-2-.5-2 4 2 1v2l-2 1 2 4 2-.5 1.5 1L11 22h4l.5-2.5 1.5-1 2 .5 2-4-2-1z']];
+const page=id=>PAGES.find(p=>p[0]===id);
+const head=(t,p,right)=>`<div class="ph"><div><h1>${t}</h1><p>${p}</p></div><div class="row">${right||''}</div></div>`;
+const lockBtn=(perm,label,act,arg,cls='btn sm',title)=>`<button class="${cls}" data-act="${act}" data-arg="${esc(arg||'')}" ${can(perm)?'':`disabled title="Requires ${perm}"`}>${label}${can(perm)?'':' <span class="chip lock">restricted</span>'}</button>`;
+let RANGE=30,MET='n';
+const MOUNT=[];
+
+function pOverview(){
+  const pts=SER.slice(-RANGE),sum=k=>pts.reduce((a,p)=>a+p[k],0),n=sum('n'),v=sum('v'),f=sum('fail');
+  const pend=D.vendors.filter(x=>['Submitted','In review','Needs info'].includes(x.status)).length;
+  const open=D.alerts.filter(a=>a.status==='Open').length;
+  const tile=(l,val,note,na)=>`<div class="card tile"><div class="lbl"><span>${l}</span>${demoChip}</div><div class="val ${na?'na':''}">${val}</div><div class="note">${note}</div></div>`;
+  const sv=SERV.map(s=>[s[0],v*s[1]]);const mxv=Math.max(...sv.map(s=>s[1]));
+  MOUNT.push(()=>{const h=$('#chart');if(h)drawArea(h,pts.map(p=>({d:p.d,y:MET==='n'?p.n:p.v})),MET==='n'?{axis:compact,full:x=>Math.round(x).toLocaleString('en-US')}:{axis:x=>CUR+compact(x),full:money},MET==='n'?'Transactions':'Volume')});
+  return head('Overview','Platform activity at a glance. Every metric on this page is demo data until a verified live source is connected.',`<select id="range" aria-label="Date range"><option value="7" ${RANGE==7?'selected':''}>Last 7 days</option><option value="30" ${RANGE==30?'selected':''}>Last 30 days</option><option value="90" ${RANGE==90?'selected':''}>Last 90 days</option></select>`)+
+  `<div class="grid g4">${tile('Registered customers',D.customers.length*214+'',`${D.customers.filter(c=>c.status==='Suspended').length} suspended in the sample directory`)}
+  ${tile('Active vendors',D.vendors.filter(x=>x.status==='Approved').length+'','Approved applications in the demo queue')}
+  ${tile('Pending KYC approvals',pend+'','Live in this prototype: changes as you approve or reject')}
+  ${tile('Orders',n.toLocaleString('en-US'),`Last ${RANGE} days`)}
+  ${tile('Transaction total',money(v),`Gross volume, last ${RANGE} days`)}
+  ${tile('Commission earned','Not configured','No commission rules approved, so no figure is calculated',1)}
+  ${tile('Failed transactions',f.toLocaleString('en-US'),`${(f/n*100).toFixed(1)}% of orders`)}
+  ${tile('Open alerts',open+'','See alerts below',0)}</div>
+  <div class="grid g2"><section class="card"><div class="card-h"><div><h2>Transaction trend</h2><p class="sub">Last ${RANGE} days · hover for daily values</p></div><div class="row"><select id="met" aria-label="Metric"><option value="n" ${MET==='n'?'selected':''}>Orders per day</option><option value="v" ${MET==='v'?'selected':''}>Volume per day</option></select></div></div><div class="chart" id="chart"></div></section>
+  <section class="card"><h2>Volume by service</h2><p class="sub">Share of gross volume, last ${RANGE} days</p>${sv.map(s=>`<div class="bar"><span>${s[0]}</span><span class="t"><i style="width:${s[1]/mxv*100}%"></i></span><span class="v">${money(s[1])}</span></div>`).join('')}<p class="sub" style="margin:8px 0 0">Flights, hotels, bus and train are excluded: not connected.</p></section></div>
+  <div class="grid g2"><section class="card"><div class="card-h"><div><h2>Operational alerts</h2><p class="sub">Things that need a decision or a connection</p></div><a class="btn sm" href="#notifications">Open health</a></div><div class="list">${D.alerts.map(a=>`<div class="li"><div><b>${esc(a.title)}</b><small>${esc(a.text)}</small></div>${chip(a.status==='Open'?(a.sev==='crit'?'Critical':a.sev==='warn'?'Attention':'Info'):a.status,a.status==='Open'?(a.sev==='crit'?'crit':a.sev==='warn'?'warn':'info'):'mute')}</div>`).join('')}</div></section>
+  <section class="card"><h2>Provider health</h2><p class="sub">No provider is connected, so no health is claimed</p><div class="list">${SVC.slice(0,7).map(s=>`<div class="li"><span>${s.name}</span>${chip(s.conn,'mute')}</div>`).join('')}</div></section></div>
+  <section class="card"><div class="card-h"><div><h2>Recent orders</h2><p class="sub">Latest demo records</p></div><a class="btn sm" href="#orders">View all</a></div>${orderMini()}</section>`}
+function orderMini(){return `<div class="tw"><table><thead><tr><th>Reference</th><th>Customer</th><th>Service</th><th class="num">Amount</th><th>Status</th><th>Time</th></tr></thead><tbody>${D.orders.slice(0,5).map(o=>`<tr><td class="mono">${o.ref}</td><td>${esc(o.custName)}</td><td>${o.service}</td><td class="num">${money(o.amount)}</td><td>${chip(o.status)} ${demoChip}</td><td>${dtstr(o.at)}</td></tr>`).join('')}</tbody></table></div>`}
+
+const mask=(s,show)=>show?esc(s):esc(s).replace(/^(.{2}).*(@.*)$/,'$1•••$2').replace(/(\d{3}) (\d{3}) .*/,'••• ••• ••••');
+function pCustomers(){
+  MOUNT.push(()=>drawTable('cust'));
+  return head('Customers','Searchable directory with account status, order history and permitted account actions. Contact details are masked unless your role allows revealing them.')+
+  tableHTML({id:'cust',ph:'Search by name, ID or email',rows:()=>D.customers,search:r=>r.name+r.id+r.email,filters:[{k:'s',label:'Status',opts:['Active','Pending verification','Suspended'],get:r=>r.status},{k:'t',label:'Tier',opts:['Tier 1','Tier 2','Tier 3'],get:r=>r.tier}],
+   cols:[{label:'Customer',r:r=>`<b>${esc(r.name)}</b><br><span class="mono" style="color:var(--muted)">${r.id}</span>`},{label:'Contact',r:r=>`<span class="mono">${mask(r.email,S.pii[r.id]&&can('customers.pii'))}</span>`},{label:'Status',r:r=>chip(r.status)},{label:'Tier',k:'tier'},{label:'Joined',r:r=>dstr(r.joined)},{label:'Orders',num:1,r:r=>D.orders.filter(o=>o.cust===r.id).length}],onRow:r=>openCustomer(r.id),empty:{title:'No customers match',text:'Adjust the search or filters.'}})}
+function openCustomer(id){const c=D.customers.find(x=>x.id===id),os=D.orders.filter(o=>o.cust===id),rv=S.pii[id]&&can('customers.pii');
+  drawer(c.name,`<div class="row">${chip(c.status)} ${demoChip} <span class="mono">${c.id}</span></div>
+  <dl class="kv"><dt>Email</dt><dd class="mono">${mask(c.email,rv)}</dd><dt>Phone</dt><dd class="mono">${mask(c.phone,rv)}</dd><dt>Tier</dt><dd>${c.tier}</dd><dt>Joined</dt><dd>${dstr(c.joined)}</dd><dt>Wallet</dt><dd>${can('ledger.view')?money(c.wallet)+' (demo)':'<span class="chip lock">restricted</span>'}</dd></dl>
+  <div class="row">${lockBtn('customers.pii',rv?'Hide contact details':'Reveal contact details','pii',id)}${c.status==='Suspended'?lockBtn('customers.suspend','Reactivate account','react',id,'btn sm pri'):lockBtn('customers.suspend','Suspend account','susp',id,'btn sm dng')}</div>
+  <div class="box">Revealing contact details is recorded in the audit log. Suspending stops sign-in and new orders; it does not delete data.</div>
+  <h2 style="font-size:14px;margin:0">Order history (${os.length})</h2><div class="list">${os.slice(0,8).map(o=>`<div class="li"><div><span class="mono">${o.ref}</span><small>${o.service} · ${dtstr(o.at)}</small></div><div style="text-align:right">${money(o.amount)}<br>${chip(o.status)}</div></div>`).join('')||'<div class="state"><b>No orders yet</b></div>'}</div>`)}
+
+function pVendors(){
+  MOUNT.push(()=>drawTable('vend'));
+  return head('Vendors & KYC','Vendor applications, document status and approval workflow. Verification documents stay protected and open only for roles with document access.')+
+  `<div class="grid g3"><div class="card tile"><div class="lbl"><span>In the review queue</span>${demoChip}</div><div class="val">${D.vendors.filter(v=>['Submitted','In review','Needs info'].includes(v.status)).length}</div></div><div class="card tile"><div class="lbl"><span>Approved</span>${demoChip}</div><div class="val">${D.vendors.filter(v=>v.status==='Approved').length}</div></div><div class="card tile"><div class="lbl"><span>Rejected</span>${demoChip}</div><div class="val">${D.vendors.filter(v=>v.status==='Rejected').length}</div></div></div>`+
+  tableHTML({id:'vend',ph:'Search vendor name or ID',rows:()=>D.vendors,search:r=>r.name+r.id,filters:[{k:'s',label:'Status',opts:['Submitted','In review','Needs info','Approved','Rejected'],get:r=>r.status},{k:'t',label:'Type',opts:['Reseller','Agent','Utility agent'],get:r=>r.type}],
+   cols:[{label:'Vendor',r:r=>`<b>${esc(r.name)}</b><br><span class="mono" style="color:var(--muted)">${r.id}</span>`},{label:'Type',k:'type'},{label:'Service area',k:'area'},{label:'Submitted',r:r=>dstr(r.submitted)},{label:'Status',r:r=>chip(r.status)}],onRow:r=>openVendor(r.id)})}
+function openVendor(id){const v=D.vendors.find(x=>x.id===id),dv=can('kyc.docs'),open=['Submitted','In review','Needs info'].includes(v.status);
+  drawer(v.name,`<div class="row">${chip(v.status)} ${demoChip} <span class="mono">${v.id}</span></div><dl class="kv"><dt>Type</dt><dd>${v.type}</dd><dt>Service area</dt><dd>${v.area}</dd><dt>Submitted</dt><dd>${dstr(v.submitted)}</dd><dt>Orders handled</dt><dd>${v.status==='Approved'?v.orders+' (demo)':'—'}</dd></dl>
+  <h2 style="font-size:14px;margin:0">Verification documents</h2><div class="list">${v.docs.map(d=>`<div class="li"><div>${d[0]}<small>${dv?'Document preview is not available in the prototype':'Preview restricted'}</small></div><div class="row">${chip(d[1],d[1]==='Received'?'good':d[1]==='Missing'?'crit':'warn')}${dv?'':'<span class="chip lock">restricted</span>'}</div></div>`).join('')}</div>
+  <div class="box">Approving makes the vendor eligible to serve orders. Rejecting notifies the applicant with your reason. Both need <span class="mono">kyc.review</span> and are real backend operations later; here they only update this demo queue.</div>
+  <div class="row">${open?lockBtn('kyc.review','Approve','kycok',id,'btn sm pri')+lockBtn('kyc.review','Request more info','kycinfo',id)+lockBtn('kyc.review','Reject','kycno',id,'btn sm dng'):'<span style="color:var(--muted)">No decision pending.</span>'}</div>`)}
+
+function pServices(){
+  return head('Services & providers','Service categories, connection status and availability. A service shows as connected only when a verified provider connection exists. None does today.')+
+  `<div class="card"><div class="list">${SVC.map((s,i)=>`<div class="li"><div style="min-width:0"><b>${s.name}</b><small>${s.name==='flight.booking'?'Status code NOT_CONNECTED. Kept disconnected until a provider is approved.':'No provider configured · last successful check: never · error rate: no telemetry'}</small></div><div class="row">${chip(s.conn,'mute')} ${chip(s.mode,s.mode==='Demo'?'info':s.mode==='Unverified'?'warn':'mute')}
+  <span class="row" style="gap:8px"><span style="font-size:12px;color:var(--muted)">${s.enabled?'Available to customers':'Unavailable'}</span><button class="sw" role="switch" aria-checked="${s.enabled}" aria-label="Availability for ${s.name}" data-act="svc" data-arg="${i}" ${(!can('services.configure')||s.name==='flight.booking'||s.mode==='Not built')?'disabled':''} title="${s.name==='flight.booking'||s.mode==='Not built'?'Locked: integration not connected':can('services.configure')?'':'Requires services.configure'}"></button></span></div></div>`).join('')}</div></div>
+  <div class="grid g22"><section class="card"><h2>Integration health</h2><p class="sub">Shows telemetry only when it exists</p><div class="state"><b>No telemetry received</b><span>Connect a provider and a health check to see error rates and recent failures here. Credentials are never shown in this dashboard.</span></div></section>
+  <section class="card"><h2>Configuration status</h2><p class="sub">What is needed before a service can go live</p><div class="list"><div class="li"><span>Provider credentials stored server-side</span>${chip('Unverified','warn')}</div><div class="li"><span>Health check endpoint</span>${chip('Unverified','warn')}</div><div class="li"><span>Commission rule approved</span>${chip('Blocked','crit')}</div><div class="li"><span>Webhook / callback verification</span>${chip('Unverified','warn')}</div></div></section></div>`}
+
+let OTAB='orders';
+function pOrders(){
+  const tabs=[['orders','Orders'],['wallet','Wallet ledger'],['bookings','Bookings']];
+  let body='';
+  if(OTAB==='orders'){MOUNT.push(()=>drawTable('ord'));body=tableHTML({id:'ord',ph:'Search by reference or customer',rows:()=>D.orders,search:r=>r.ref+r.custName+r.cust,filters:[{k:'s',label:'Status',opts:['Successful','Pending','Failed','Refunded'],get:r=>r.status},{k:'v',label:'Service',opts:SERV.map(s=>s[0]),get:r=>r.service}],
+   cols:[{label:'Reference',r:r=>`<span class="mono">${r.ref}</span>`},{label:'Customer',r:r=>esc(r.custName)},{label:'Service',k:'service'},{label:'Amount',num:1,r:r=>money(r.amount)},{label:'Status',r:r=>chip(r.status)+(r.flag?' '+chip('Disputed'):'')},{label:'Time',r:r=>dtstr(r.at)}],onRow:r=>openOrder(r.ref),empty:{title:'No orders match',text:'Adjust the search or filters.'}})}
+  else if(OTAB==='wallet'){ if(!can('ledger.view'))body=denied('ledger.view'); else{MOUNT.push(()=>drawTable('led'));body=`<div class="box" style="margin-bottom:10px"><b>Reconciliation:</b> not available. Reconciling against a payment provider needs a connected provider and a settlement report. Ledger rows below are demo data.</div>`+tableHTML({id:'led',ph:'Search by ledger ID or order reference',rows:()=>D.ledger,search:r=>r.id+r.ref+r.cust,filters:[{k:'t',label:'Type',opts:['Credit','Debit'],get:r=>r.type}],cols:[{label:'Entry',r:r=>`<span class="mono">${r.id}</span>`},{label:'Customer',k:'cust'},{label:'Order ref',r:r=>`<span class="mono">${r.ref}</span>`},{label:'Type',r:r=>chip(r.type,r.type==='Credit'?'good':'info')},{label:'Amount',num:1,r:r=>money(r.amount)},{label:'Balance after',num:1,r:r=>money(r.balance)},{label:'Time',r:r=>dtstr(r.at)}]})}}
+  else body=`<div class="state"><b>No bookings to show</b><span>Flight (flight.booking NOT_CONNECTED), hotel, bus and train integrations are not connected. This view stays empty so no ticket or reservation is ever implied.</span><div class="row">${['Flights','Hotels','Bus','Train'].map(x=>chip(x+': not connected','mute')).join('')}</div></div>`;
+  return head('Orders & transactions','Searchable order records, wallet ledger and booking views. Cancellation, dispute and refund workflows are demo-safe and never move money.')+`<div class="tabs" role="tablist">${tabs.map(t=>`<button role="tab" data-otab="${t[0]}" aria-selected="${OTAB===t[0]}">${t[1]}</button>`).join('')}</div>`+body}
+const denied=p=>`<div class="state err"><b>Access restricted</b><span>Your role needs <span class="mono">${p}</span>. The server must return 403 for this data, not only hide it here.</span></div>`;
+function openOrder(ref){const o=D.orders.find(x=>x.ref===ref);
+  drawer(o.ref,`<div class="row">${chip(o.status)} ${o.flag?chip('Disputed'):''} ${demoChip}</div><dl class="kv"><dt>Customer</dt><dd>${esc(o.custName)} <span class="mono">${o.cust}</span></dd><dt>Service</dt><dd>${o.service}</dd><dt>Amount</dt><dd>${money(o.amount)}</dd><dt>Channel</dt><dd>${o.channel}</dd><dt>Placed</dt><dd>${dtstr(o.at)}</dd><dt>Provider status</dt><dd>${chip('Not connected','mute')} no provider response exists</dd><dt>Receipt</dt><dd>${chip('Simulated')} not confirmed by an email or SMS provider</dd></dl>
+  <div class="box">Actions below change this demo record only. Refund is blocked: no verified refund endpoint exists, and no real payment is ever processed here.</div>
+  <div class="row">${o.status==='Pending'?lockBtn('orders.cancel','Cancel order','cancel',ref,'btn sm dng'):''}${lockBtn('orders.dispute',o.flag?'Dispute flagged':'Flag dispute','dispute',ref)}<button class="btn sm" disabled title="Blocked: no refund endpoint verified">Refund <span class="chip lock">blocked</span></button></div>`)}
+
+function pCommissions(){
+  MOUNT.push(()=>drawTable('rep'));
+  const vol=SER.slice(-30).reduce((a,p)=>a+p.v,0);
+  return head('Commissions & reports','Commission rules, earnings summaries and report exports. No commission rate has been supplied, so no earnings or revenue are calculated.',lockBtn('reports.export','Export summary','export','','btn pri'))+
+  `<div class="grid g22"><section class="card"><h2>Commission rules</h2><p class="sub">Rates must come from Commander. The prototype never invents one.</p><div class="tw"><table><thead><tr><th>Service</th><th>Rule type</th><th>Rate</th><th>Status</th></tr></thead><tbody>${SERV.map(s=>`<tr><td>${s[0]}</td><td>Not set</td><td class="mono">—</td><td>${chip('Awaiting approval','warn')}</td></tr>`).join('')}</tbody></table></div><div class="row" style="margin-top:10px">${lockBtn('commissions.edit','Edit rules','rules','','btn sm')}</div></section>
+  <section class="card"><h2>Platform revenue</h2><p class="sub">Last 30 days</p><div class="tile"><div class="val na">Unavailable</div><div class="note">Needs approved commission rules. Gross volume for the same period is ${money(vol)} ${demoChip}</div></div><h2 style="margin-top:16px">Vendor earnings</h2><p class="sub">Vendor payouts follow commission rules, so none are shown.</p><div class="state" style="padding:16px"><span>No vendor earnings can be calculated yet.</span></div></section></div>
+  <section class="card"><h2>Volume report</h2><p class="sub">Filter by service. Exports include only data your role may see, built server-side.</p>`+
+  tableHTML({id:'rep',ph:'Search by day',rows:()=>SER.slice().reverse(),pageSize:10,search:r=>dstr(r.d),filters:[],cols:[{label:'Day',r:r=>dstr(r.d)},{label:'Orders',num:1,r:r=>r.n.toLocaleString('en-US')},{label:'Gross volume',num:1,r:r=>money(r.v)},{label:'Failed',num:1,r:r=>r.fail},{label:'Data',r:()=>demoChip}]})+`</section>`}
+
+function pStaff(){
+  const roles=Object.keys(ROLES);
+  MOUNT.push(()=>drawTable('staff'));
+  return head('Staff & permissions','Role-based access for authorised administrators. Restricted actions are marked; least privilege applies and the server decides, never the screen.',lockBtn('staff.manage','Invite staff','invite','','btn pri'))+
+  tableHTML({id:'staff',ph:'Search staff',rows:()=>D.staff,search:r=>r.name+r.role,cols:[{label:'Name',k:'name'},{label:'Role',k:'role'},{label:'Status',r:r=>chip(r.status==='Active'?'Active':'Pending')},{label:'Two-step sign-in',k:'mfa'}]})+
+  `<section class="card"><h2>Permission matrix</h2><p class="sub">Your current preview role: <b>${ROLES[S.role].label}</b></p><div class="tw"><table class="matrix"><thead><tr><th>Capability</th>${roles.map(r=>`<th ${r===S.role?'style="color:var(--accent)"':''}>${ROLES[r].label.replace(' (read-only)','')}</th>`).join('')}</tr></thead><tbody>${CAPS.map(c=>`<tr><td>${c[1]} ${c[2]?'<span class="chip lock">restricted</span>':''}<br><span class="mono" style="color:var(--faint)">${c[0]}</span></td>${roles.map(r=>{const k=ROLES[r].caps;const y=k==='*'||k.includes(c[0]);return `<td>${y?'<span class="yes" aria-label="Allowed">✓</span>':'<span class="no" aria-label="Not allowed">–</span>'}</td>`}).join('')}</tr>`).join('')}</tbody></table></div></section>`}
+
+function pAudit(){
+  MOUNT.push(()=>drawTable('aud'));
+  return head('Audit logs','Who did what, to which record, and what happened. Actions you take in this prototype are added here as Simulated.')+
+  tableHTML({id:'aud',ph:'Search actor, action or record',rows:()=>D.audit,search:r=>r.actor+r.action+r.target,filters:[{k:'a',label:'Actor',opts:['Super Admin','Operations','Support','Finance','Auditor (read-only)'],get:r=>r.actor},{k:'o',label:'Outcome',opts:['Simulated','Denied'],get:r=>r.outcome}],
+   cols:[{label:'Time',r:r=>dtstr(r.at)},{label:'Actor',k:'actor'},{label:'Action',k:'action'},{label:'Affected record',r:r=>`<span class="mono">${esc(r.target)}</span>`},{label:'Outcome',r:r=>chip(r.outcome)}],onRow:r=>drawer(r.id,`<dl class="kv"><dt>Actor</dt><dd>${r.actor}</dd><dt>Action</dt><dd>${esc(r.action)}</dd><dt>Record</dt><dd class="mono">${esc(r.target)}</dd><dt>Time</dt><dd>${r.at.toLocaleString('en-GB')}</dd><dt>Outcome</dt><dd>${chip(r.outcome)}</dd></dl><div class="box">In production this log must be written by the server, append-only, and not editable from the dashboard.</div>`)})}
+
+let NTAB='hist';
+function pNotes(){
+  const tabs=[['hist','Delivery history'],['failed','Failed queue'],['health','Provider health'],['alerts','Alerts']];let b='';
+  if(NTAB==='hist'){MOUNT.push(()=>drawTable('nt'));b=tableHTML({id:'nt',ph:'Search recipient or type',rows:()=>D.notes,search:r=>r.to+r.type,filters:[{k:'c',label:'Channel',opts:['Email','SMS'],get:r=>r.channel}],cols:[{label:'Time',r:r=>dtstr(r.at)},{label:'Channel',k:'channel'},{label:'Type',k:'type'},{label:'Customer',k:'to'},{label:'Delivery',r:r=>chip(r.status)},{label:'Note',k:'reason'}]})}
+  else if(NTAB==='failed'){const f=D.notes.filter(n=>n.status==='Failed');b=f.length?`<div class="card"><div class="list">${f.map(n=>`<div class="li"><div><b>${n.channel} · ${n.type}</b><small>${n.to} · ${n.reason}</small></div>${lockBtn('notifications.retry','Retry','retry',n.id)}</div>`).join('')}</div></div>`:`<div class="state"><b>Nothing to retry</b><span>Failed notifications appear here.</span></div>`}
+  else if(NTAB==='health'){b=`<div class="grid g22">${['Email provider','SMS provider'].map(x=>`<section class="card"><div class="card-h"><h2>${x}</h2>${chip('Not connected','mute')}</div><p class="sub">Delivery cannot be confirmed. Messages shown as Simulated were never sent.</p><dl class="kv"><dt>Last check</dt><dd>never</dd><dt>Error rate</dt><dd>no telemetry</dd></dl></section>`).join('')}</div>`}
+  else b=`<div class="card"><div class="list">${D.alerts.map(a=>`<div class="li"><div><b>${esc(a.title)}</b><small>${esc(a.text)}</small></div><div class="row">${chip(a.status)}${a.status==='Open'?lockBtn('alerts.ack','Acknowledge','ack',a.id):''}</div></div>`).join('')}</div></div>`;
+  return head('Notifications & system health','Message delivery, failures and provider health. Delivery is never claimed without a provider confirmation.')+`<div class="tabs" role="tablist">${tabs.map(t=>`<button role="tab" data-ntab="${t[0]}" aria-selected="${NTAB===t[0]}">${t[1]}</button>`).join('')}</div>`+b}
+
+function pSettings(){
+  const L=[['Browse, search, filter, paginate, open details','Functional','UI works on demo data'],['Role preview, permission checks on buttons','Functional','UI only; no server enforcement'],['Suspend, approve, cancel, toggle settings','Simulated','Updates demo data, writes an audit row, no backend call'],['Metrics, orders, customers, vendors','Demo data','Replace `api` layer with authenticated endpoints'],['Refunds and adjustments','Blocked','No refund endpoint verified'],['Provider health, notification delivery','Not connected','No providers or telemetry'],['Commission rates and revenue','Not configured','Awaiting rates from Commander'],['Report export file','Simulated','Download is not produced in this preview']];
+  return head('Platform settings','Service controls and administrative settings. Consequential changes ask for confirmation and a reason.')+
+  `<div class="grid g22"><section class="card"><h2>Environment</h2><p class="sub">Where this dashboard is pointed</p><dl class="kv"><dt>Mode</dt><dd>${chip('Demo','info')} no live backend</dd><dt>Payments</dt><dd>${chip('Not connected','mute')} no real payment processing</dd><dt>flight.booking</dt><dd>${chip('NOT_CONNECTED','mute')}</dd><dt>Company</dt><dd>Stenco Apex Global Limited</dd></dl></section>
+  <section class="card"><h2>Business rules</h2><p class="sub">Values must be supplied; none are assumed</p><div class="list"><div class="li"><span>Daily transaction limit</span><span class="mono">Not set</span></div><div class="li"><span>Wallet funding limit</span><span class="mono">Not set</span></div><div class="li"><span>Refund window</span><span class="mono">Not set</span></div></div></section></div>
+  <section class="card"><h2>Service controls</h2><p class="sub">Feature flags and maintenance</p><div class="list">${SETTINGS.map((s,i)=>`<div class="li"><div><b>${s.label}</b> ${can(s.perm)?'':'<span class="chip lock">restricted</span>'}<small>${s.desc}</small></div><button class="sw" role="switch" aria-checked="${s.on}" aria-label="${s.label}" data-act="setting" data-arg="${i}" ${can(s.perm)?'':'disabled title="Requires settings.change"'}></button></div>`).join('')}</div></section>
+  <section class="card"><h2>What is functional, simulated, or not connected</h2><p class="sub">Read this before treating anything here as real</p><div class="tw"><table><thead><tr><th>Capability</th><th>Status</th><th>Detail</th></tr></thead><tbody>${L.map(l=>`<tr><td>${l[0]}</td><td>${chip(l[1],l[1]==='Functional'?'good':l[1]==='Blocked'?'crit':l[1]==='Simulated'||l[1]==='Demo data'?'info':'mute')}</td><td>${l[2]}</td></tr>`).join('')}</tbody></table></div></section>`}
+
+/* ===== Actions (all simulated) ===== */
+const byId=(a,i)=>a.find(x=>x.id===i||x.ref===i);
+const ACT={
+ pii(id){if(!guard('customers.pii'))return;S.pii[id]=!S.pii[id];if(S.pii[id])audit('Revealed contact details',id);openCustomer(id);render(true)},
+ susp(id){confirmDlg({title:'Suspend this account?',body:'The customer will be unable to sign in or place orders.',outcome:'Status changes to Suspended in the demo directory.',perm:'customers.suspend',reason:1,danger:1,label:'Suspend account',audit:'Suspend customer',target:id,done:'Account suspended (simulated)',run:()=>{byId(D.customers,id).status='Suspended'}})},
+ react(id){confirmDlg({title:'Reactivate this account?',body:'Sign-in and ordering are restored.',outcome:'Status changes to Active in the demo directory.',perm:'customers.suspend',reason:1,label:'Reactivate',audit:'Reactivate customer',target:id,done:'Account reactivated (simulated)',run:()=>{byId(D.customers,id).status='Active'}})},
+ kycok(id){confirmDlg({title:'Approve this vendor?',body:'The vendor becomes eligible to serve orders once services are connected.',outcome:'Application moves to Approved; pending KYC count drops by one.',perm:'kyc.review',label:'Approve',audit:'Approve KYC',target:id,done:'Vendor approved (simulated)',run:()=>{byId(D.vendors,id).status='Approved'}})},
+ kycno(id){confirmDlg({title:'Reject this application?',body:'The applicant would be told the outcome with your reason.',outcome:'Application moves to Rejected. No email or SMS is sent from this prototype.',perm:'kyc.review',reason:1,danger:1,label:'Reject',audit:'Reject KYC',target:id,done:'Application rejected (simulated)',run:()=>{byId(D.vendors,id).status='Rejected'}})},
+ kycinfo(id){confirmDlg({title:'Request more information?',body:'The application is paused until the vendor supplies what is missing.',outcome:'Status changes to Needs info.',perm:'kyc.review',reason:1,label:'Request info',audit:'Request KYC info',target:id,done:'Marked as needs info (simulated)',run:()=>{byId(D.vendors,id).status='Needs info'}})},
+ cancel(ref){confirmDlg({title:'Cancel this pending order?',body:'No payment or provider call exists for demo orders.',outcome:'Order status changes to Cancelled in the demo records.',perm:'orders.cancel',reason:1,danger:1,label:'Cancel order',audit:'Cancel order',target:ref,done:'Order cancelled (simulated)',run:()=>{byId(D.orders,ref).status='Cancelled'}})},
+ dispute(ref){const o=byId(D.orders,ref);if(o.flag){toast('Already flagged');return}confirmDlg({title:'Flag this order as disputed?',body:'Flagged orders are held for review by Finance.',outcome:'A Disputed marker appears on the order.',perm:'orders.dispute',reason:1,label:'Flag dispute',audit:'Flag dispute',target:ref,done:'Dispute flagged (simulated)',run:()=>{o.flag=true}})},
+ svc(i){const s=SVC[+i];confirmDlg({title:`${s.enabled?'Disable':'Enable'} ${s.name}?`,body:s.enabled?'Customers will no longer see this service.':'Customers will see this service. No provider is connected, so orders could not be fulfilled live.',outcome:`Availability becomes ${s.enabled?'Unavailable':'Available'} in demo state only.`,perm:'services.configure',reason:1,label:s.enabled?'Disable':'Enable',danger:s.enabled,audit:'Toggle service',target:s.name,done:'Service availability updated (simulated)',run:()=>{s.enabled=!s.enabled}})},
+ setting(i){const s=SETTINGS[+i];confirmDlg({title:`${s.on?'Turn off':'Turn on'} ${s.label.toLowerCase()}?`,body:s.desc,outcome:`Setting changes to ${s.on?'Off':'On'} in demo state. Nothing outside this prototype is affected.`,perm:'settings.change',reason:1,danger:s.k==='maint'&&!s.on,label:'Apply change',audit:'Change setting',target:s.label,done:'Setting updated (simulated)',run:()=>{s.on=!s.on}})},
+ retry(id){confirmDlg({title:'Retry this notification?',body:'No email or SMS provider is connected.',outcome:'Retry is recorded as Simulated. The message is not sent and no delivery is claimed.',perm:'notifications.retry',label:'Retry',audit:'Retry notification',target:id,done:'Retry recorded (simulated, nothing sent)',run:()=>{byId(D.notes,id).status='Simulated'}})},
+ ack(id){confirmDlg({title:'Acknowledge this alert?',body:'The alert is marked as seen. It does not resolve the underlying issue.',outcome:'Alert status changes to Acknowledged.',perm:'alerts.ack',label:'Acknowledge',audit:'Acknowledge alert',target:id,done:'Alert acknowledged',run:()=>{byId(D.alerts,id).status='Acknowledged'}})},
+ export(){confirmDlg({title:'Export summary report?',body:'A real export is built by the server and limited to data your role may access.',outcome:'No file is produced in this preview. The request is logged as Simulated.',perm:'reports.export',label:'Request export',audit:'Export report',target:'Volume report',done:'Export simulated, no file created',run:()=>{}})},
+ rules(){confirmDlg({title:'Edit commission rules?',body:'Editing needs rates supplied by Commander. None are entered here.',outcome:'No change is made. Opens the rule editor in the real build.',perm:'commissions.edit',label:'Understood',audit:'Open commission rules',target:'Rules',done:'No change made',run:()=>{}})},
+ invite(){confirmDlg({title:'Invite a staff member?',body:'The invite would assign a role and require two-step sign-in.',outcome:'Adds a Pending invite row to the demo staff list.',perm:'staff.manage',reason:1,label:'Send invite',audit:'Invite staff',target:'New staff',done:'Invite recorded (simulated, no email sent)',run:()=>{D.staff.push({name:'New invitee (demo)',role:'Support',status:'Pending invite',mfa:'—'})}})}};
+
+/* ===== Router & shell ===== */
+function renderNav(){const open=D.alerts.filter(a=>a.status==='Open').length;
+  $('#nav').innerHTML=PAGES.map(p=>`<a href="#${p[0]}" data-nav="${p[0]}" ${cur()===p[0]?'aria-current="page"':''} class="${can(p[2])?'':'locked'}"><svg viewBox="0 0 24 24"><path d="${p[3]}"/></svg>${p[1]}${p[0]==='notifications'&&open?`<span class="badge">${open}</span>`:''}${can(p[2])?'':'<span class="chip lock" style="margin-left:auto">no access</span>'}</a>`).join('');
+  $('#belln').textContent=open;$('#belln').hidden=!open}
+const cur=()=>{const h=location.hash.slice(1);return page(h)?h:'overview'};
+const FN_={overview:pOverview,customers:pCustomers,vendors:pVendors,services:pServices,orders:pOrders,commissions:pCommissions,staff:pStaff,audit:pAudit,notifications:pNotes,settings:pSettings};
+function render(keepScroll){
+  const id=cur(),p=page(id);MOUNT.length=0;renderNav();
+  $('#crumbs').innerHTML=`<span>HyBills Admin</span><span>/</span><b>${p[1]}</b>`;
+  $('#mename').innerHTML=`${ROLES[S.role].label}<small>Demo session</small>`;$('#av').textContent=ROLES[S.role].short;
+  let h;
+  if(!can(p[2]))h=head(p[1],'')+denied(p[2]);
+  else if(S.dstate==='loading')h=head(p[1],'Loading…')+`<div class="grid g4">${[1,2,3,4].map(()=>'<div class="card"><div class="sk" style="width:50%"></div><div class="sk" style="height:28px;margin-top:12px;width:70%"></div></div>').join('')}</div><div class="card" style="display:grid;gap:12px">${[1,2,3,4,5].map(()=>'<div class="sk"></div>').join('')}</div>`;
+  else if(S.dstate==='error')h=head(p[1],'')+`<div class="state err"><b>Could not load ${p[1].toLowerCase()}</b><span>The request failed (simulated). Check your connection and try again. If it keeps failing, contact the platform team with this time: ${new Date().toLocaleTimeString()}.</span><button class="btn pri" id="retryload">Try again</button></div>`;
+  else h=FN_[id]();
+  const y=scrollY;$('#work').innerHTML=h;MOUNT.forEach(f=>f());if(keepScroll)scrollTo(0,y);
+}
+addEventListener('hashchange',()=>{$('#side').classList.remove('open');closeLayer();render();scrollTo(0,0)});
+addEventListener('resize',()=>{if(cur()==='overview'&&$('#chart'))render(true)});
+document.addEventListener('input',e=>{const t=e.target;if(t.dataset.tq){TS[t.dataset.tq].q=t.value;TS[t.dataset.tq].p=1;drawTable(t.dataset.tq)}});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.dataset.tf){TS[t.dataset.tf].f[t.dataset.k]=t.value;TS[t.dataset.tf].p=1;drawTable(t.dataset.tf)}
+  else if(t.id==='range'){RANGE=+t.value;render(true)}else if(t.id==='met'){MET=t.value;render(true)}
+  else if(t.id==='role'){S.role=t.value;S.pii={};audit('Role preview changed','—');render()}
+  else if(t.id==='dstate'){S.dstate=t.value;render()}
+  else if(t.id==='theme'){if(t.value)document.documentElement.dataset.theme=t.value;else delete document.documentElement.dataset.theme;setTimeout(()=>render(true),30)}});
+document.addEventListener('click',e=>{const t=e.target.closest('button,a,tr[data-row],[data-close]');
+  if(!t){return}
+  if(t.hasAttribute('data-close')&&(t===e.target||t.tagName==='BUTTON')){closeLayer();return}
+  if(t.dataset.act){ACT[t.dataset.act](t.dataset.arg);return}
+  if(t.dataset.pg){const[i,d]=t.dataset.pg.split(':');TS[i].p+=+d;drawTable(i);return}
+  if(t.dataset.clear){const s=TS[t.dataset.clear];s.q='';s.f={};s.p=1;const q=$('#q-'+t.dataset.clear);if(q)q.value='';$$(`[data-tf="${t.dataset.clear}"]`).forEach(x=>x.value='');drawTable(t.dataset.clear);return}
+  if(t.dataset.row){const[i,n]=t.dataset.row.split(':');T[i].onRow(TS[i].view[+n]);return}
+  if(t.dataset.otab){OTAB=t.dataset.otab;render(true);return}
+  if(t.dataset.ntab){NTAB=t.dataset.ntab;render(true);return}
+  if(t.id==='retryload'){S.dstate='ready';$('#dstate').value='ready';render();return}
+  if(t.id==='burger'){$('#side').classList.toggle('open');return}
+  if(t.id==='bell'){location.hash='#notifications';NTAB='alerts';render();return}
+  if(t.id==='me'){const p=$('#pop');p.hidden=!p.hidden;t.setAttribute('aria-expanded',!p.hidden);return}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeLayer();$('#pop').hidden=true;$('#side').classList.remove('open')}
+  if(e.key==='Enter'&&e.target.dataset&&e.target.dataset.row==null&&e.target.closest&&e.target.closest('tr[data-row]')){e.target.closest('tr[data-row]').click()}
+  if(e.key==='Enter'&&e.target.id==='gs'){const q=e.target.value.trim();if(!q)return;const isO=/^hb-o/i.test(q);const id=isO?'ord':'cust';
+    TS[id]=TS[id]||{q:'',f:{},p:1,view:[]};TS[id].q=q;TS[id].f={};TS[id].p=1;if(isO)OTAB='orders';
+    if(!can(isO?'orders.view':'customers.view')){toast('Your role cannot search that area');return}
+    const h=isO?'#orders':'#customers';if(location.hash===h)render();else location.hash=h}});
+document.addEventListener('keydown',e=>{const tr=e.target.closest&&e.target.closest('tr[data-row]');if(tr&&e.key==='Enter'&&e.target===tr)tr.click()});
+$('#role').innerHTML=Object.keys(ROLES).map(k=>`<option value="${k}">${ROLES[k].label}</option>`).join('');
+$('#brandlogo').innerHTML=lockup({size:36,compact:true}); // same call the customer app header uses
+render();
+</script>
